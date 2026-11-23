@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Không Gian Quản Lý Cá Nhân Hóa</title>
+    <style>
+        /* =================================================================
+           1. BIẾN MÀU SẮC & GIA TỐC CHUYỂN ĐỘNG (DESIGN TOKENS)
+           ================================================================= */
+        :root {
+            --bg-body: #f3f3f4;
+            --bg-surface: #ffffff;
+            --bg-subtle: #f8f8f9;
+            --bg-hover: #f0f0f2;
+            --text-main: #111111;
+            --text-muted: #666668;
+            --border-color: #e2e2e5;
+            --border-strong: #111111;
+            --accent-bg: #111111;
+            --accent-text: #ffffff;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.08);
+            --shadow-modal: 0 24px 48px rgba(0, 0, 0, 0.18);
+
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0a0a0a;
+            --bg-surface: #141414;
+            --bg-subtle: #1c1c1e;
+            --bg-hover: #242426;
+            --text-main: #f5f5f7;
+            --text-muted: #98989d;
+            --border-color: #2c2c2e;
+            --border-strong: #f5f5f7;
+            --accent-bg: #f5f5f7;
+            --accent-text: #111111;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.5);
+            --shadow-modal: 0 24px 48px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s var(--ease-smooth), color 0.3s var(--ease-smooth), border-color 0.3s var(--ease-smooth);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.55;
+            padding: 24px 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1220px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            animation: containerEnter 0.6s var(--ease-smooth) forwards;
+        }
+
+        @keyframes containerEnter {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =================================================================
+           2. PHẦN ĐẦU TRANG CÁ NHÂN HÓA
+           ================================================================= */
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+
+        .brand-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s var(--ease-spring);
+            cursor: pointer;
+        }
+
+        .brand-logo:hover {
+            transform: scale(1.06) rotate(-2deg);
+        }
+
+        .header-title .greeting-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .header-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+            line-height: 1.2;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .stat-pill {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-pill strong {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        /* =================================================================
+           3. HỆ THỐNG NÚT BẤM
+           ================================================================= */
+        button {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 15px;
+            border-radius: 9px;
+            border: 1px solid var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.2s var(--ease-spring), background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1.5px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            border-color: var(--accent-bg);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: var(--bg-surface);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-subtle);
+            border-color: var(--border-strong);
+        }
+
+        .btn-sm {
+            padding: 5px 11px;
+            font-size: 12px;
+            border-radius: 7px;
+        }
+
+        /* =================================================================
+           4. THANH TAB CÓ NỀN TRƯỢT MƯỢT MÀ
+           ================================================================= */
+        .nav-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tabs-container {
+            position: relative;
+            display: inline-flex;
+            flex-wrap: wrap;
+            background: var(--bg-subtle);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            gap: 4px;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--accent-bg);
+            border-radius: 8px;
+            transition: transform 0.35s var(--ease-smooth), width 0.35s var(--ease-smooth), height 0.35s var(--ease-smooth);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .tab-btn {
+            position: relative;
+            z-index: 2;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            border-radius: 8px;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-text);
+        }
+
+        /* Bộ chuyển chế độ xem trong Tab Lịch (Danh sách / Bảng lịch) */
+        .view-switcher {
+            display: inline-flex;
+            background: var(--bg-subtle);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 6px 12px;
+            font-size: 12.5px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--text-muted);
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .view-btn.active {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm) !important;
+        }
+
+        /* =================================================================
+           5. THANH CÔNG CỤ TÌM KIẾM & LỌC
+           ================================================================= */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex: 1;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="url"],
+        select,
+        textarea {
+            padding: 9px 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: var(--bg-surface);
+            color: var(--text-main);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--border-strong);
+            box-shadow: 0 0 0 3px rgba(128, 128, 128, 0.15);
+        }
+
+        .search-input {
+            min-width: 240px;
+            flex: 1;
+            max-width: 360px;
+        }
+
+        /* =================================================================
+           6. BẢNG DỮ LIỆU & CHUYỂN ĐỘNG TỪNG DÒNG
+           ================================================================= */
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-surface);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13.5px;
+        }
+
+        th {
+            background-color: var(--bg-subtle);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tbody tr {
+            opacity: 0;
+            animation: rowReveal 0.4s var(--ease-smooth) forwards;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: var(--bg-hover);
+        }
+
+        @keyframes rowReveal {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Nhãn trạng thái & thẻ nhân sự phụ trách */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--border-strong);
+            white-space: nowrap;
+        }
+
+        .badge-solid {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+        }
+
+        .badge-outline {
+            background-color: transparent;
+            color: var(--text-main);
+        }
+
+        .badge-dashed {
+            border-style: dashed;
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .assignee-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .assignee-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .address-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Chỉ dẫn vị trí lưu file */
+        .file-location-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 280px;
+        }
+
+        .file-path-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .file-actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 4px 9px;
+            border-radius: 6px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .link-btn:hover {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+            border-color: var(--accent-bg);
+            transform: translateY(-1px);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+
+        /* =================================================================
+           7. BẢNG LỊCH THÁNG TRỰC QUAN (CALENDAR GRID)
+           ================================================================= */
+        .calendar-wrapper {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--bg-surface);
+            animation: rowReveal 0.4s var(--ease-smooth) forwards;
+        }
+
+        .calendar-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+        }
+
+        .calendar-title {
+            font-size: 17px;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-scroll {
+            overflow-x: auto;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(145px, 1fr));
+        }
+
+        .calendar-weekday {
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .calendar-weekday:last-child {
+            border-right: none;
+        }
+
+        .calendar-day {
+            min-height: 125px;
+            padding: 8px;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar-day:nth-child(7n) {
+            border-right: none;
+        }
+
+        .calendar-day:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .calendar-day.other-month {
+            background-color: var(--bg-subtle);
+            opacity: 0.45;
+        }
+
+        .day-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-number {
+            font-size: 13px;
+            font-weight: 700;
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .calendar-day.today .day-number {
+            background-color: var(--accent-bg);
+            color: var(--accent-text);
+        }
+
+        .day-add-btn {
+            opacity: 0;
+            padding: 2px 7px;
+            font-size: 12px;
+            border-radius: 5px;
+            background: var(--bg-surface);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            transition: opacity 0.2s ease;
+        }
+
+        .calendar-day:hover .day-add-btn {
+            opacity: 1;
+        }
+
+        .cal-event {
+            padding: 6px 8px;
+            border-radius: 7px;
+            font-size: 11.5px;
+            border: 1px solid var(--border-strong);
+            background: var(--bg-surface);
+            cursor: pointer;
+            transition: transform 0.2s var(--ease-spring), box-shadow 0.2s ease;
+        }
+
+        .cal-event:hover {
+            transform: translateY(-1.5px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cal-event.done {
+            opacity: 0.6;
+            text-decoration: line-through;
+            border-style: dashed;
+        }
+
+        .cal-event.doing {
+            background: var(--accent-bg);
+            color: var(--accent-text);
+        }
+
+        .cal-event-title {
+            font-weight: 700;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cal-event-meta {
+            font-size: 10.5px;
+            opacity: 0.85;
+            display: block;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* =================================================================
+           8. LƯỚI THẺ NHÂN SỰ CÓ ẢNH ĐẠI DIỆN (STAFF CARDS GRID)
+           ================================================================= */
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .staff-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            opacity: 0;
+            animation: rowReveal 0.45s var(--ease-smooth) forwards;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-strong);
+        }
+
+        .staff-card-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .staff-avatar {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-strong);
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .staff-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .staff-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .staff-card-details {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: var(--bg-subtle);
+            padding: 10px 12px;
+            border-radius: 9px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .staff-card-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        /* =================================================================
+           9. CỬA SỔ NHẬP LIỆU & CHỌN NHIỀU NHÂN SỰ (MODAL)
+           ================================================================= */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.28s var(--ease-smooth), visibility 0.28s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-modal);
+            transform: scale(0.93) translateY(12px);
+            transition: transform 0.35s var(--ease-spring);
+        }
+
+        .modal-overlay.open .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .modal-header h2 {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Khung chọn nhiều nhân sự */
+        .multi-staff-box {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            max-height: 165px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: var(--bg-subtle);
+        }
+
+        .staff-check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 13px;
+            transition: border-color 0.2s ease;
+        }
+
+        .staff-check-item:hover {
+            border-color: var(--border-strong);
+        }
+
+        .staff-check-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-bg);
+            cursor: pointer;
+        }
+
+        /* Khu vực tải ảnh nhân sự trong Form */
+        .avatar-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            border: 1px dashed var(--border-strong);
+            border-radius: 10px;
+            background: var(--bg-subtle);
+        }
+
+        .avatar-preview {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-strong);
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* =================================================================
+           10. THÔNG BÁO NỔI (TOAST)
+           ================================================================= */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: toastSlideIn 0.35s var(--ease-spring) forwards;
+        }
+
+        .toast.hide {
+            animation: toastSlideOut 0.25s var(--ease-smooth) forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toastSlideOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(10px) scale(0.95); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PHẦN ĐẦU TRANG CÁ NHÂN HÓA -->
+    <header>
+        <div class="brand-area">
+            <div class="brand-logo" id="brandLogo" onclick="openPersonalizeModal()" title="Bấm để tùy chỉnh thương hiệu">SW</div>
+            <div class="header-title">
+                <span class="greeting-tag" id="greetingText">Xin chào, Quản trị viên</span>
+                <h1 id="brandTitle">STUDIO WORKSPACE</h1>
+                <p id="brandTagline">Hệ thống điều phối nhân sự & sản xuất tinh gọn</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-outline" onclick="toggleTheme()" id="themeBtn" title="Đổi chế độ Sáng / Tối">◐ Đổi nền</button>
+            <button class="btn-outline" onclick="openPersonalizeModal()">✎ Cá nhân hóa</button>
+            <button class="btn-outline" onclick="exportData()">↓ Sao lưu</button>
+            <button class="btn-outline" onclick="document.getElementById('importFile').click()">↑ Khôi phục</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        </div>
+    </header>
+
+    <!-- THANH THỐNG KÊ NHANH -->
+    <div class="stats-bar" id="statsBar"></div>
+
+    <!-- HÀNG ĐIỀU HƯỚNG TAB + CHUYỂN CHẾ ĐỘ LỊCH -->
+    <div class="nav-row">
+        <nav class="tabs-container" id="tabsContainer">
+            <div class="tab-indicator" id="tabIndicator"></div>
+            <button class="tab-btn active" data-tab="tasks" onclick="switchTab('tasks')">1. Lịch & Phân công</button>
+            <button class="tab-btn" data-tab="staff" onclick="switchTab('staff')">2. Nhân sự</button>
+            <button class="tab-btn" data-tab="docs" onclick="switchTab('docs')">3. Tài liệu</button>
+            <button class="tab-btn" data-tab="prodFiles" onclick="switchTab('prodFiles')">4. File sản xuất</button>
+        </nav>
+
+        <!-- Nút chuyển đổi Danh sách / Bảng lịch (Chỉ hiện khi ở Tab 1) -->
+        <div class="view-switcher" id="taskViewSwitcher">
+            <button class="view-btn active" id="btnViewList" onclick="setTaskView('list')">☰ Danh sách</button>
+            <button class="view-btn" id="btnViewCalendar" onclick="setTaskView('calendar')">▦ Bảng lịch tháng</button>
+        </div>
+    </div>
+
+    <!-- THANH CÔNG CỤ -->
+    <div class="toolbar">
+        <div class="filter-group">
+            <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm nhanh trong mục này..." oninput="renderCurrentView()">
+            <select id="statusFilter" onchange="renderCurrentView()">
+                <option value="ALL">Tất cả trạng thái / phân loại</option>
+            </select>
+        </div>
+        <button class="btn-primary" onclick="openModal()">+ Thêm mới</button>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ NỘI DUNG CHÍNH (BẢNG / LỊCH / THẺ NHÂN SỰ) -->
+    <div id="mainContentArea"></div>
+</div>
+
+<!-- CỬA SỔ THÊM / SỬA DỮ LIỆU -->
+<div class="modal-overlay" id="formModal" onclick="handleBackdropClick(event, 'formModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 id="modalTitle">Thêm thông tin mới</h2>
+            <button class="btn-outline btn-sm" onclick="closeModal('formModal')">✕</button>
+        </div>
+        <form id="dynamicForm" onsubmit="saveFormData(event)">
+            <input type="hidden" id="editId">
+            <div id="formFields"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeModal('formModal')">Hủy bỏ</button>
+                <button type="submit" class="btn-primary">Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CỬA SỔ CÁ NHÂN HÓA KHÔNG GIAN LÀM VIỆC -->
+<div class="modal-overlay" id="personalizeModal" onclick="handleBackdropClick(event, 'personalizeModal')">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2>Cá nhân hóa không gian làm việc</h2>
+            <button class="btn-outline btn-sm" onclick="closeModal('personalizeModal')">✕</button>
+        </div>
+        <form onsubmit="savePersonalization(event)">
+            <div class="form-group">
+                <label>Tên thương hiệu / Công ty của bạn</label>
+                <input type="text" id="p_brandName" required maxlength="40" placeholder="VD: THỨC PRODUCE">
+            </div>
+            <div class="form-group">
+                <label>Ký tự Logo (2 - 3 chữ cái viết tắt)</label>
+                <input type="text" id="p_monogram" required maxlength="3" placeholder="VD: TP">
+            </div>
+            <div class="form-group">
+                <label>Tên hiển thị của bạn (Cho lời chào đầu trang)</label>
+                <input type="text" id="p_userName" required maxlength="30" placeholder="VD: Quý Khang">
+            </div>
+            <div class="form-group">
+                <label>Khẩu hiệu / Mô tả ngắn</label>
+                <input type="text" id="p_tagline" maxlength="80" placeholder="VD: Quản lý lịch trình & sản xuất hình ảnh">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeModal('personalizeModal')">Đóng</button>
+                <button type="submit" class="btn-primary">Áp dụng thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- CỬA SỔ XÁC NHẬN XÓA -->
+<div class="modal-overlay" id="confirmModal" onclick="handleBackdropClick(event, 'confirmModal')">
+    <div class="modal-box" style="max-width: 380px;">
+        <div class="modal-header">
+            <h2>Xác nhận xóa dữ liệu</h2>
+            <button class="btn-outline btn-sm" onclick="closeModal('confirmModal')">✕</button>
+        </div>
+        <p style="font-size: 14px; color: var(--text-muted);">Bạn có chắc chắn muốn xóa mục này khỏi danh sách không? Hành động này không thể hoàn tác.</p>
+        <div class="modal-footer">
+            <button type="button" class="btn-outline" onclick="closeModal('confirmModal')">Giữ lại</button>
+            <button type="button" class="btn-primary" onclick="confirmDelete()">Xóa vĩnh viễn</button>
+        </div>
+    </div>
+</div>
+
+<!-- VÙNG HIỂN THỊ THÔNG BÁO NỔI (TOAST) -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    /* =================================================================
+       1. KHỞI TẠO & CHUẨN HÓA DỮ LIỆU
+       ================================================================= */
+    const STORAGE_KEY = "app_quan_ly_van_hanh_v1";
+    let currentTab = "tasks";
+    let taskViewMode = "list"; // 'list' hoặc 'calendar'
+    let pendingDeleteId = null;
+    let tempAvatarBase64 = "";
+
+    // Biến theo dõi tháng/năm đang xem trên Bảng lịch
+    const now = new Date();
+    let calYear = now.getFullYear();
+    let calMonth = now.getMonth();
+
+    const defaultProfile = {
+        brandName: "STUDIO WORKSPACE",
+        monogram: "SW",
+        userName: "Quản trị viên",
+        tagline: "Hệ thống điều phối nhân sự & sản xuất tinh gọn",
+        theme: "light"
+    };
+
+    const todayStr = now.toISOString().split("T")[0];
+
+    const defaultData = {
+        profile: { ...defaultProfile },
+        staff: [
+            { id: "st1", name: "Nguyễn Minh Tuấn", role: "Quay phim / Chụp chính", phone: "0901 234 567", status: "Đang làm việc", avatar: "" },
+            { id: "st2", name: "Trần Thu Hà", role: "Hậu kỳ & Dựng phim", phone: "0912 345 678", status: "Đang làm việc", avatar: "" },
+            { id: "st3", name: "Lê Hoàng Nam", role: "Trợ lý ánh sáng & Thiết bị", phone: "0988 765 432", status: "Đang làm việc", avatar: "" }
+        ],
+        tasks: [
+            {
+                id: "tk1",
+                title: "Chụp ảnh sự kiện hội nghị khách hàng",
+                date: todayStr,
+                time: "08:00",
+                address: "Trung tâm Hội nghị Quốc gia, Hà Nội",
+                assignees: ["Nguyễn Minh Tuấn", "Lê Hoàng Nam"],
+                status: "Đang làm",
+                note: "Mang theo 2 đèn flash và ống kính góc rộng"
+            },
+            {
+                id: "tk2",
+                title: "Dựng video tổng kết dự án tháng",
+                date: todayStr,
+                time: "14:30",
+                address: "Văn phòng Studio - Phòng Hậu kỳ 2",
+                assignees: ["Trần Thu Hà"],
+                status: "Chờ thực hiện",
+                note: "Xuất bản nháp gửi khách duyệt trước 17h"
+            }
+        ],
+        docs: [
+            {
+                id: "dc1",
+                title: "Quy trình bàn giao sản phẩm chuẩn",
+                category: "Quy trình nội bộ",
+                locationGuide: "Google Drive > 01. Tài liệu nội bộ > Quy trình vận hành",
+                link: "https://drive.google.com",
+                updatedAt: todayStr
+            },
+            {
+                id: "dc2",
+                title: "Mẫu hợp đồng dịch vụ quay chụp",
+                category: "Hợp đồng & Biểu mẫu",
+                locationGuide: "Ổ D:\\TaiLieuCongTy\\BieuMau_HopDong_2026.docx",
+                link: "https://docs.google.com",
+                updatedAt: todayStr
+            }
+        ],
+        prodFiles: [
+            {
+                id: "pf1",
+                project: "Dự án Sự kiện Mùa Thu",
+                fileType: "File gốc (Raw)",
+                assignee: "Nguyễn Minh Tuấn",
+                locationGuide: "Ổ E:\\DuAn_2026\\SuKienMuaThu\\01_RAW_CAM_A",
+                link: "https://drive.google.com",
+                status: "Đã tải lên"
+            },
+            {
+                id: "pf2",
+                project: "Bộ ảnh Kỷ yếu Lớp 12A1",
+                fileType: "File hoàn thiện (Final)",
+                assignee: "Trần Thu Hà",
+                locationGuide: "Google Drive > Khách hàng 2026 > KyYeu_12A1 > Final_Print",
+                link: "https://drive.google.com",
+                status: "Đã bàn giao"
+            }
+        ]
+    };
+
+    // Hàm nâng cấp dữ liệu cũ lên định dạng mới an toàn
+    function normalizeAppData(raw) {
+        if (!raw) return JSON.parse(JSON.stringify(defaultData));
+        const normalized = {
+            profile: { ...defaultProfile, ...(raw.profile || {}) },
+            staff: (raw.staff || []).map(s => ({
+                avatar: "",
+                ...s
+            })),
+            tasks: (raw.tasks || []).map(t => {
+                // Chuyển đổi từ 1 người (assignee) sang nhiều người (assignees) nếu dùng dữ liệu cũ
+                let list = Array.isArray(t.assignees) ? t.assignees : (t.assignee ? [t.assignee] : []);
+                return {
+                    address: "",
+                    ...t,
+                    assignees: list
+                };
+            }),
+            docs: (raw.docs || []).map(d => ({
+                locationGuide: "",
+                ...d
+            })),
+            prodFiles: (raw.prodFiles || []).map(p => ({
+                locationGuide: "",
+                ...p
+            }))
+        };
+        return normalized;
+    }
+
+    let appData = normalizeAppData(JSON.parse(localStorage.getItem(STORAGE_KEY)));
+
+    function persistData() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            updateStats();
+        } catch (e) {
+            showToast("Cảnh báo: Bộ nhớ trình duyệt sắp đầy, hãy sao lưu và dọn bớt ảnh cũ!");
+        }
+    }
+
+    function escapeHTML(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function formatURL(url) {
+        if (!url) return "";
+        return url.startsWith("http://") || url.startsWith("https://") ? url : "https://" + url;
+    }
+
+    function getInitials(name) {
+        if (!name) return "?";
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    /* =================================================================
+       2. THÔNG BÁO NỔI, SAO CHÉP ĐƯỜNG DẪN & CÁ NHÂN HÓA
+       ================================================================= */
+    function showToast(message) {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.innerHTML = `<span>●</span> <span>${escapeHTML(message)}</span>`;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add("hide");
+            setTimeout(() => toast.remove(), 260);
+        }, 2600);
+    }
+
+    function copyText(text) {
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Đã sao chép đường dẫn vị trí lưu file!");
+        }).catch(() => {
+            showToast("Không thể sao chép tự động, bạn hãy bôi đen để chép nhé.");
+        });
+    }
+
+    function getTimeGreeting() {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Chào buổi sáng";
+        if (hour < 18) return "Chào buổi chiều";
+        return "Chào buổi tối";
+    }
+
+    function applyPersonalization() {
+        const p = appData.profile;
+        document.documentElement.setAttribute("data-theme", p.theme || "light");
+        document.getElementById("brandLogo").textContent = p.monogram.toUpperCase();
+        document.getElementById("brandTitle").textContent = p.brandName;
+        document.getElementById("brandTagline").textContent = p.tagline;
+        document.getElementById("greetingText").textContent = `${getTimeGreeting()}, ${p.userName}`;
+        document.getElementById("themeBtn").textContent = p.theme === "dark" ? "☀ Nền sáng" : "◐ Nền tối";
+        document.title = `${p.brandName} — Quản Lý Nội Bộ`;
+    }
+
+    function toggleTheme() {
+        appData.profile.theme = appData.profile.theme === "light" ? "dark" : "light";
+        persistData();
+        applyPersonalization();
+        showToast(appData.profile.theme === "dark" ? "Đã chuyển sang giao diện Đen tối giản" : "Đã chuyển sang giao diện Trắng tinh khôi");
+    }
+
+    function openPersonalizeModal() {
+        const p = appData.profile;
+        document.getElementById("p_brandName").value = p.brandName;
+        document.getElementById("p_monogram").value = p.monogram;
+        document.getElementById("p_userName").value = p.userName;
+        document.getElementById("p_tagline").value = p.tagline;
+        document.getElementById("personalizeModal").classList.add("open");
+    }
+
+    function savePersonalization(event) {
+        event.preventDefault();
+        appData.profile.brandName = document.getElementById("p_brandName").value.trim() || "STUDIO WORKSPACE";
+        appData.profile.monogram = document.getElementById("p_monogram").value.trim() || "SW";
+        appData.profile.userName = document.getElementById("p_userName").value.trim() || "Bạn";
+        appData.profile.tagline = document.getElementById("p_tagline").value.trim();
+
+        persistData();
+        applyPersonalization();
+        closeModal("personalizeModal");
+        showToast("Đã cập nhật thông tin cá nhân hóa!");
+    }
+
+    function updateStats() {
+        const activeStaff = appData.staff.filter(s => s.status === "Đang làm việc").length;
+        const pendingTasks = appData.tasks.filter(t => t.status !== "Hoàn thành").length;
+        const totalProjects = appData.prodFiles.length;
+        const totalDocs = appData.docs.length;
+
+        document.getElementById("statsBar").innerHTML = `
+            <div class="stat-pill">Nhân sự hoạt động: <strong>${activeStaff}</strong></div>
+            <div class="stat-pill">Việc đang mở: <strong>${pendingTasks}</strong></div>
+            <div class="stat-pill">Dự án sản xuất: <strong>${totalProjects}</strong></div>
+            <div class="stat-pill">Tài liệu lưu trữ: <strong>${totalDocs}</strong></div>
+        `;
+    }
+
+    /* =================================================================
+       3. CHUYỂN TAB & CHUYỂN CHẾ ĐỘ XEM LỊCH
+       ================================================================= */
+    function updateTabIndicator() {
+        const activeBtn = document.querySelector(".tab-btn.active");
+        const indicator = document.getElementById("tabIndicator");
+        if (!activeBtn || !indicator) return;
+
+        indicator.style.width = `${activeBtn.offsetWidth}px`;
+        indicator.style.height = `${activeBtn.offsetHeight}px`;
+        indicator.style.transform = `translate(${activeBtn.offsetLeft}px, ${activeBtn.offsetTop}px)`;
+    }
+
+    function switchTab(tabName) {
+        currentTab = tabName;
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.tab === tabName);
+        });
+
+        // Chỉ hiện nút chuyển Danh sách / Bảng lịch khi đang ở Tab 1
+        document.getElementById("taskViewSwitcher").style.display = tabName === "tasks" ? "inline-flex" : "none";
+
+        updateTabIndicator();
+        document.getElementById("searchInput").value = "";
+        updateFilterOptions();
+        renderCurrentView();
+    }
+
+    function setTaskView(mode) {
+        taskViewMode = mode;
+        document.getElementById("btnViewList").classList.toggle("active", mode === "list");
+        document.getElementById("btnViewCalendar").classList.toggle("active", mode === "calendar");
+        renderCurrentView();
+    }
+
+    window.addEventListener("resize", updateTabIndicator);
+
+    function updateFilterOptions() {
+        const filterSelect = document.getElementById("statusFilter");
+        let options = ['<option value="ALL">Tất cả trạng thái / phân loại</option>'];
+
+        if (currentTab === "tasks") {
+            ["Chờ thực hiện", "Đang làm", "Hoàn thành"].forEach(st => options.push(`<option value="${st}">${st}</option>`));
+        } else if (currentTab === "staff") {
+            ["Đang làm việc", "Tạm nghỉ"].forEach(st => options.push(`<option value="${st}">${st}</option>`));
+        } else if (currentTab === "docs") {
+            ["Quy trình nội bộ", "Hợp đồng & Biểu mẫu", "Tài liệu tham khảo", "Khác"].forEach(cat => options.push(`<option value="${cat}">${cat}</option>`));
+        } else if (currentTab === "prodFiles") {
+            ["Đã tải lên", "Đang chỉnh sửa", "Đã bàn giao"].forEach(st => options.push(`<option value="${st}">${st}</option>`));
+        }
+        filterSelect.innerHTML = options.join("");
+    }
+
+    /* =================================================================
+       4. HIỂN THỊ DỮ LIỆU CHÍNH (BẢNG / LỊCH THÁNG / THẺ NHÂN SỰ)
+       ================================================================= */
+    function getBadgeClass(status) {
+        if (["Hoàn thành", "Đang làm việc", "Đã bàn giao"].includes(status)) return "badge badge-solid";
+        if (["Đang làm", "Đang chỉnh sửa", "Đã tải lên"].includes(status)) return "badge badge-outline";
+        return "badge badge-dashed";
+    }
+
+    function renderCurrentView() {
+        const container = document.getElementById("mainContentArea");
+        const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+        const filterVal = document.getElementById("statusFilter").value;
+
+        // 1. TAB LỊCH & PHÂN CÔNG
+        if (currentTab === "tasks") {
+            const filtered = appData.tasks.filter(item => {
+                const staffStr = (item.assignees || []).join(" ");
+                const matchText = (item.title + staffStr + (item.address || "") + (item.note || "")).toLowerCase().includes(keyword);
+                const matchFilter = filterVal === "ALL" || item.status === filterVal;
+                return matchText && matchFilter;
+            });
+
+            if (taskViewMode === "calendar") {
+                renderCalendarView(container, filtered);
+                return;
+            }
+
+            // Chế độ danh sách
+            let rowsHTML = filtered.map((item, idx) => {
+                const chips = (item.assignees && item.assignees.length > 0)
+                    ? item.assignees.map(name => `<span class="assignee-chip">● ${escapeHTML(name)}</span>`).join("")
+                    : `<span style="color: var(--text-muted); font-size: 12px;">Chưa phân công</span>`;
+
+                const addrHTML = item.address
+                    ? `<div class="address-tag">📍 ${escapeHTML(item.address)}</div>`
+                    : "";
+
+                return `<tr style="animation-delay: ${Math.min(idx * 0.04, 0.4)}s">
+                    <td>
+                        <strong>${escapeHTML(item.title)}</strong>
+                        ${addrHTML}
+                    </td>
+                    <td style="white-space: nowrap;">${escapeHTML(item.date)} ${item.time ? "<br><span style='color:var(--text-muted);font-size:12px;'>⏰ " + escapeHTML(item.time) + "</span>" : ""}</td>
+                    <td><div class="assignee-list">${chips}</div></td>
+                    <td><span class="${getBadgeClass(item.status)}">${escapeHTML(item.status)}</span></td>
+                    <td style="color: var(--text-muted); max-width: 220px;">${escapeHTML(item.note)}</td>
+                    <td class="action-btns">
+                        <button class="btn-outline btn-sm" onclick="openModal('${item.id}')">Sửa</button>
+                        <button class="btn-outline btn-sm" onclick="requestDelete('${item.id}')">Xóa</button>
+                    </td>
+                </tr>`;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Công việc & Địa chỉ</th>
+                                <th>Thời gian</th>
+                                <th>Đội ngũ phụ trách</th>
+                                <th>Trạng thái</th>
+                                <th>Ghi chú</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML || `<tr><td colspan="6" class="empty-state">Chưa có lịch trình nào phù hợp. Hãy bấm <strong>"+ Thêm mới"</strong> để tạo nhiệm vụ!</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        // 2. TAB NHÂN SỰ (DẠNG LƯỚI THẺ CÓ ẢNH ĐẠI DIỆN)
+        else if (currentTab === "staff") {
+            const filtered = appData.staff.filter(item =>
+                (item.name + item.role + item.phone).toLowerCase().includes(keyword) &&
+                (filterVal === "ALL" || item.status === filterVal)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="table-wrapper"><div class="empty-state">Chưa có hồ sơ nhân sự phù hợp. Hãy bấm <strong>"+ Thêm mới"</strong> để thêm thành viên!</div></div>`;
+                return;
+            }
+
+            const cardsHTML = filtered.map((item, idx) => {
+                const avatarHTML = item.avatar
+                    ? `<img src="${item.avatar}" alt="${escapeHTML(item.name)}" class="staff-avatar">`
+                    : `<div class="staff-avatar">${escapeHTML(getInitials(item.name))}</div>`;
+
+                return `
+                <div class="staff-card" style="animation-delay: ${Math.min(idx * 0.05, 0.4)}s">
+                    <div>
+                        <div class="staff-card-top">
+                            ${avatarHTML}
+                            <div class="staff-info">
+                                <h3>${escapeHTML(item.name)}</h3>
+                                <p>${escapeHTML(item.role)}</p>
+                            </div>
+                        </div>
+                        <div class="staff-card-details" style="margin-top: 14px;">
+                            <span>📞 ${escapeHTML(item.phone || "Chưa cập nhật SĐT")}</span>
+                            <span class="${getBadgeClass(item.status)}">${escapeHTML(item.status)}</span>
+                        </div>
+                    </div>
+                    <div class="staff-card-footer">
+                        <button class="btn-outline btn-sm" onclick="openModal('${item.id}')">✎ Sửa thẻ</button>
+                        <button class="btn-outline btn-sm" onclick="requestDelete('${item.id}')">✕ Xóa</button>
+                    </div>
+                </div>`;
+            }).join("");
+
+            container.innerHTML = `<div class="staff-grid">${cardsHTML}</div>`;
+        }
+
+        // 3. TAB TÀI LIỆU (CÓ CHỈ DẪN VỊ TRÍ FILE CỤ THỂ)
+        else if (currentTab === "docs") {
+            const filtered = appData.docs.filter(item =>
+                (item.title + item.category + (item.locationGuide || "")).toLowerCase().includes(keyword) &&
+                (filterVal === "ALL" || item.category === filterVal)
+            );
+
+            const rowsHTML = filtered.map((item, idx) => {
+                const guideText = item.locationGuide || "Chưa ghi chú thư mục lưu trữ";
+                const linkBtn = item.link
+                    ? `<a href="${escapeHTML(formatURL(item.link))}" target="_blank" rel="noopener" class="link-btn">Mở link ↗</a>`
+                    : "";
+                const copyBtn = item.locationGuide
+                    ? `<button class="btn-outline btn-sm" onclick="copyText('${escapeHTML(item.locationGuide).replace(/'/g, "\\'")}')">📋 Chép vị trí</button>`
+                    : "";
+
+                return `<tr style="animation-delay: ${Math.min(idx * 0.04, 0.4)}s">
+                    <td><strong>${escapeHTML(item.title)}</strong></td>
+                    <td><span class="badge badge-outline">${escapeHTML(item.category)}</span></td>
+                    <td>
+                        <div class="file-location-box">
+                            <span class="file-path-code">📁 ${escapeHTML(guideText)}</span>
+                            <div class="file-actions-row">${copyBtn}${linkBtn}</div>
+                        </div>
+                    </td>
+                    <td>${escapeHTML(item.updatedAt)}</td>
+                    <td class="action-btns">
+                        <button class="btn-outline btn-sm" onclick="openModal('${item.id}')">Sửa</button>
+                        <button class="btn-outline btn-sm" onclick="requestDelete('${item.id}')">Xóa</button>
+                    </td>
+                </tr>`;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên tài liệu</th>
+                                <th>Phân loại</th>
+                                <th>Chỉ dẫn vị trí lưu file & Truy cập</th>
+                                <th>Cập nhật</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML || `<tr><td colspan="5" class="empty-state">Chưa có tài liệu nào phù hợp.</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        // 4. TAB FILE SẢN XUẤT (CÓ CHỈ DẪN VỊ TRÍ FILE CỤ THỂ)
+        else if (currentTab === "prodFiles") {
+            const filtered = appData.prodFiles.filter(item =>
+                (item.project + item.fileType + item.assignee + (item.locationGuide || "")).toLowerCase().includes(keyword) &&
+                (filterVal === "ALL" || item.status === filterVal)
+            );
+
+            const rowsHTML = filtered.map((item, idx) => {
+                const guideText = item.locationGuide || "Chưa ghi chú thư mục lưu trữ";
+                const linkBtn = item.link
+                    ? `<a href="${escapeHTML(formatURL(item.link))}" target="_blank" rel="noopener" class="link-btn">Mở thư mục ↗</a>`
+                    : "";
+                const copyBtn = item.locationGuide
+                    ? `<button class="btn-outline btn-sm" onclick="copyText('${escapeHTML(item.locationGuide).replace(/'/g, "\\'")}')">📋 Chép vị trí</button>`
+                    : "";
+
+                return `<tr style="animation-delay: ${Math.min(idx * 0.04, 0.4)}s">
+                    <td><strong>${escapeHTML(item.project)}</strong></td>
+                    <td>${escapeHTML(item.fileType)}</td>
+                    <td>${escapeHTML(item.assignee)}</td>
+                    <td>
+                        <div class="file-location-box">
+                            <span class="file-path-code">💾 ${escapeHTML(guideText)}</span>
+                            <div class="file-actions-row">${copyBtn}${linkBtn}</div>
+                        </div>
+                    </td>
+                    <td><span class="${getBadgeClass(item.status)}">${escapeHTML(item.status)}</span></td>
+                    <td class="action-btns">
+                        <button class="btn-outline btn-sm" onclick="openModal('${item.id}')">Sửa</button>
+                        <button class="btn-outline btn-sm" onclick="requestDelete('${item.id}')">Xóa</button>
+                    </td>
+                </tr>`;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên dự án / Khách hàng</th>
+                                <th>Loại file</th>
+                                <th>Phụ trách</th>
+                                <th>Chỉ dẫn đường dẫn lưu trữ</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML || `<tr><td colspan="6" class="empty-state">Chưa có dự án sản xuất nào phù hợp.</td></tr>`}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+    }
+
+    /* =================================================================
+       5. THUẬT TOÁN VẼ BẢNG LỊCH THÁNG (CALENDAR VIEW)
+       ================================================================= */
+    function changeCalendarMonth(delta) {
+        calMonth += delta;
+        if (calMonth > 11) {
+            calMonth = 0;
+            calYear++;
+        } else if (calMonth < 0) {
+            calMonth = 11;
+            calYear--;
+        }
+        renderCurrentView();
+    }
+
+    function goCalendarToday() {
+        const d = new Date();
+        calYear = d.getFullYear();
+        calMonth = d.getMonth();
+        renderCurrentView();
+    }
+
+    function renderCalendarView(container, tasksList) {
+        const monthNames = [
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        ];
+        const weekdays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
+
+        const firstDayOfMonth = new Date(calYear, calMonth, 1);
+        // Quy đổi Chủ nhật (0) thành 6, Thứ 2 (1) thành 0...
+        let startWeekday = firstDayOfMonth.getDay() - 1;
+        if (startWeekday < 0) startWeekday = 6;
+
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
+
+        let cellsHTML = weekdays.map(w => `<div class="calendar-weekday">${w}</div>`).join("");
+
+        // Các ngày cuối của tháng trước (làm mờ)
+        for (let i = startWeekday - 1; i >= 0; i--) {
+            const dNum = daysInPrevMonth - i;
+            cellsHTML += `<div class="calendar-day other-month"><div class="day-top"><span class="day-number">${dNum}</span></div></div>`;
+        }
+
+        // Các ngày chính thức trong tháng hiện tại
+        for (let day = 1; day <= daysInMonth; day++) {
+            const mm = String(calMonth + 1).padStart(2, "0");
+            const dd = String(day).padStart(2, "0");
+            const dateKey = `${calYear}-${mm}-${dd}`;
+            const isToday = dateKey === todayStr;
+
+            // Lọc các công việc diễn ra trong ngày này và sắp xếp theo giờ
+            const dayTasks = tasksList
+                .filter(t => t.date === dateKey)
+                .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
+            const eventsHTML = dayTasks.map(t => {
+                let statusCls = "";
+                if (t.status === "Hoàn thành") statusCls = "done";
+                else if (t.status === "Đang làm") statusCls = "doing";
+
+                const peopleCount = (t.assignees || []).length;
+                const subText = [
+                    t.time ? t.time : "",
+                    peopleCount > 0 ? `${peopleCount} nhân sự` : "",
+                    t.address ? `📍 ${t.address}` : ""
+                ].filter(Boolean).join(" • ");
+
+                return `
+                    <div class="cal-event ${statusCls}" onclick="openModal('${t.id}')" title="Bấm để xem hoặc sửa chi tiết">
+                        <span class="cal-event-title">${escapeHTML(t.title)}</span>
+                        ${subText ? `<span class="cal-event-meta">${escapeHTML(subText)}</span>` : ""}
+                    </div>`;
+            }).join("");
+
+            cellsHTML += `
+                <div class="calendar-day ${isToday ? "today" : ""}">
+                    <div class="day-top">
+                        <span class="day-number">${day}</span>
+                        <button class="day-add-btn" onclick="openModal(null, '${dateKey}')" title="Thêm lịch vào ngày ${dd}/${mm}">+ Thêm</button>
+                    </div>
+                    ${eventsHTML}
+                </div>`;
+        }
+
+        // Bổ sung các ô trống đầu tháng sau cho tròn hàng 7 cột
+        const totalCells = startWeekday + daysInMonth;
+        const remainder = totalCells % 7;
+        if (remainder > 0) {
+            for (let i = 1; i <= 7 - remainder; i++) {
+                cellsHTML += `<div class="calendar-day other-month"><div class="day-top"><span class="day-number">${i}</span></div></div>`;
+            }
+        }
+
+        container.innerHTML = `
+            <div class="calendar-wrapper">
+                <div class="calendar-header">
+                    <div class="calendar-title">📅 ${monthNames[calMonth]} / ${calYear}</div>
+                    <div class="calendar-nav">
+                        <button class="btn-outline btn-sm" onclick="changeCalendarMonth(-1)">← Tháng trước</button>
+                        <button class="btn-outline btn-sm" onclick="goCalendarToday()">Hôm nay</button>
+                        <button class="btn-outline btn-sm" onclick="changeCalendarMonth(1)">Tháng sau →</button>
+                    </div>
+                </div>
+                <div class="calendar-scroll">
+                    <div class="calendar-grid">${cellsHTML}</div>
+                </div>
+            </div>`;
+    }
+
+    /* =================================================================
+       6. XỬ LÝ FORM THÊM / SỬA & NÉN ẢNH NHÂN SỰ
+       ================================================================= */
+    function getMultiStaffCheckboxes(selectedArray = []) {
+        if (appData.staff.length === 0) {
+            return `<div style="font-size:13px; color:var(--text-muted); padding:6px;">Chưa có danh sách nhân sự. Hãy thêm thành viên ở Tab 2 trước nhé!</div>`;
+        }
+        return appData.staff.map(s => {
+            const isChecked = selectedArray.includes(s.name) ? "checked" : "";
+            return `
+                <label class="staff-check-item">
+                    <input type="checkbox" name="f_assignees" value="${escapeHTML(s.name)}" ${isChecked}>
+                    <span><strong>${escapeHTML(s.name)}</strong> — <span style="color:var(--text-muted);">${escapeHTML(s.role)}</span></span>
+                </label>`;
+        }).join("");
+    }
+
+    function getSingleStaffOptions(selectedName) {
+        if (appData.staff.length === 0) {
+            return `<option value="Chưa phân công">Chưa có nhân sự</option>`;
+        }
+        return appData.staff.map(s =>
+            `<option value="${escapeHTML(s.name)}" ${s.name === selectedName ? "selected" : ""}>${escapeHTML(s.name)} (${escapeHTML(s.role)})</option>`
+        ).join("");
+    }
+
+    // Xử lý tải ảnh và tự động thu nhỏ bằng Canvas
+    function handleAvatarFileChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement("canvas");
+                const MAX_SIZE = 200; // Kích thước tối đa 200x200px giúp nhẹ bộ nhớ
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_SIZE) {
+                        height = Math.round((height * MAX_SIZE) / width);
+                        width = MAX_SIZE;
+                    }
+                } else {
+                    if (height > MAX_SIZE) {
+                        width = Math.round((width * MAX_SIZE) / height);
+                        height = MAX_SIZE;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                tempAvatarBase64 = canvas.toDataURL("image/jpeg", 0.82);
+                const previewWrap = document.getElementById("avatarPreviewWrap");
+                if (previewWrap) {
+                    previewWrap.innerHTML = `<img src="${tempAvatarBase64}" class="avatar-preview" alt="Preview">`;
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearAvatarPhoto() {
+        tempAvatarBase64 = "";
+        const nameVal = document.getElementById("f_name")?.value || "?";
+        const previewWrap = document.getElementById("avatarPreviewWrap");
+        if (previewWrap) {
+            previewWrap.innerHTML = `<div class="avatar-preview">${escapeHTML(getInitials(nameVal))}</div>`;
+        }
+    }
+
+    function openModal(editId = null, prefillDate = null) {
+        const modal = document.getElementById("formModal");
+        const fieldsDiv = document.getElementById("formFields");
+        const titleEl = document.getElementById("modalTitle");
+        document.getElementById("editId").value = editId || "";
+
+        const item = editId ? appData[currentTab].find(x => x.id === editId) : null;
+        titleEl.textContent = item ? "Chỉnh sửa thông tin" : "Thêm thông tin mới";
+
+        if (currentTab === "tasks") {
+            const defaultDate = item ? item.date : (prefillDate || todayStr);
+            fieldsDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Tên công việc / Nhiệm vụ *</label>
+                    <input type="text" id="f_title" required value="${item ? escapeHTML(item.title) : ""}">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Ngày thực hiện *</label>
+                        <input type="date" id="f_date" required value="${escapeHTML(defaultDate)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Khung giờ</label>
+                        <input type="time" id="f_time" value="${item ? escapeHTML(item.time) : "09:00"}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Địa chỉ / Địa điểm thực hiện</label>
+                    <input type="text" id="f_address" placeholder="VD: Số 12 Phố Huế, Hà Nội hoặc Studio 1..." value="${item ? escapeHTML(item.address || "") : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Chọn nhân sự phụ trách (Có thể tích chọn nhiều người)</label>
+                    <div class="multi-staff-box">
+                        ${getMultiStaffCheckboxes(item ? item.assignees : [])}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái tiến độ</label>
+                    <select id="f_status">
+                        <option value="Chờ thực hiện" ${item?.status === "Chờ thực hiện" ? "selected" : ""}>Chờ thực hiện</option>
+                        <option value="Đang làm" ${item?.status === "Đang làm" ? "selected" : ""}>Đang làm</option>
+                        <option value="Hoàn thành" ${item?.status === "Hoàn thành" ? "selected" : ""}>Hoàn thành</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ghi chú chi tiết</label>
+                    <textarea id="f_note" rows="2">${item ? escapeHTML(item.note) : ""}</textarea>
+                </div>
+            `;
+        } else if (currentTab === "staff") {
+            tempAvatarBase64 = item ? (item.avatar || "") : "";
+            const previewHTML = tempAvatarBase64
+                ? `<img src="${tempAvatarBase64}" class="avatar-preview" alt="Avatar">`
+                : `<div class="avatar-preview">${escapeHTML(getInitials(item ? item.name : "NV"))}</div>`;
+
+            fieldsDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Ảnh đại diện nhân sự</label>
+                    <div class="avatar-upload-area">
+                        <div id="avatarPreviewWrap">${previewHTML}</div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <input type="file" id="f_avatarInput" accept="image/*" style="display:none;" onchange="handleAvatarFileChange(event)">
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="btn-outline btn-sm" onclick="document.getElementById('f_avatarInput').click()">📷 Chọn ảnh từ máy</button>
+                                <button type="button" class="btn-outline btn-sm" onclick="clearAvatarPhoto()">Gỡ ảnh</button>
+                            </div>
+                            <span style="font-size:11.5px; color:var(--text-muted);">Ảnh tự động thu nhỏ gọn nhẹ để lưu trữ mượt mà.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Họ và tên nhân sự *</label>
+                    <input type="text" id="f_name" required value="${item ? escapeHTML(item.name) : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Vai trò / Vị trí chuyên môn *</label>
+                    <input type="text" id="f_role" required placeholder="VD: Quay phim, Dựng phim, Điều phối..." value="${item ? escapeHTML(item.role) : ""}">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Số điện thoại / Liên hệ</label>
+                        <input type="text" id="f_phone" value="${item ? escapeHTML(item.phone) : ""}">
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái làm việc</label>
+                        <select id="f_status">
+                            <option value="Đang làm việc" ${item?.status === "Đang làm việc" ? "selected" : ""}>Đang làm việc</option>
+                            <option value="Tạm nghỉ" ${item?.status === "Tạm nghỉ" ? "selected" : ""}>Tạm nghỉ</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        } else if (currentTab === "docs") {
+            fieldsDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Tên tài liệu *</label>
+                    <input type="text" id="f_title" required value="${item ? escapeHTML(item.title) : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Phân loại tài liệu</label>
+                    <select id="f_category">
+                        <option value="Quy trình nội bộ" ${item?.category === "Quy trình nội bộ" ? "selected" : ""}>Quy trình nội bộ</option>
+                        <option value="Hợp đồng & Biểu mẫu" ${item?.category === "Hợp đồng & Biểu mẫu" ? "selected" : ""}>Hợp đồng & Biểu mẫu</option>
+                        <option value="Tài liệu tham khảo" ${item?.category === "Tài liệu tham khảo" ? "selected" : ""}>Tài liệu tham khảo</option>
+                        <option value="Khác" ${item?.category === "Khác" ? "selected" : ""}>Khác</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Chỉ dẫn vị trí / Thư mục lưu file cụ thể *</label>
+                    <input type="text" id="f_locationGuide" required placeholder="VD: Ổ D:\\TaiLieu\\HopDong.docx hoặc Drive > Thư mục Nội bộ" value="${item ? escapeHTML(item.locationGuide || "") : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Đường dẫn mở nhanh trực tuyến (Link Google Drive, Docs - nếu có)</label>
+                    <input type="text" id="f_link" placeholder="https://..." value="${item ? escapeHTML(item.link || "") : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Ngày cập nhật</label>
+                    <input type="date" id="f_updatedAt" value="${item ? escapeHTML(item.updatedAt) : todayStr}">
+                </div>
+            `;
+        } else if (currentTab === "prodFiles") {
+            fieldsDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Tên dự án / Khách hàng *</label>
+                    <input type="text" id="f_project" required value="${item ? escapeHTML(item.project) : ""}">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Loại file sản xuất</label>
+                        <select id="f_fileType">
+                            <option value="File gốc (Raw)" ${item?.fileType === "File gốc (Raw)" ? "selected" : ""}>File gốc (Raw)</option>
+                            <option value="Bản dựng nháp (Draft)" ${item?.fileType === "Bản dựng nháp (Draft)" ? "selected" : ""}>Bản dựng nháp (Draft)</option>
+                            <option value="File hoàn thiện (Final)" ${item?.fileType === "File hoàn thiện (Final)" ? "selected" : ""}>File hoàn thiện (Final)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nhân sự phụ trách</label>
+                        <select id="f_assignee">${getSingleStaffOptions(item ? item.assignee : "")}</select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Chỉ dẫn thư mục / Ổ cứng lưu trữ cụ thể *</label>
+                    <input type="text" id="f_locationGuide" required placeholder="VD: Ổ E:\\DuAn_2026\\TenKhachHang\\01_RAW" value="${item ? escapeHTML(item.locationGuide || "") : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Link thư mục đám mây (Google Drive, Dropbox - nếu có)</label>
+                    <input type="text" id="f_link" placeholder="https://drive.google.com/..." value="${item ? escapeHTML(item.link || "") : ""}">
+                </div>
+                <div class="form-group">
+                    <label>Trạng thái bàn giao</label>
+                    <select id="f_status">
+                        <option value="Đã tải lên" ${item?.status === "Đã tải lên" ? "selected" : ""}>Đã tải lên</option>
+                        <option value="Đang chỉnh sửa" ${item?.status === "Đang chỉnh sửa" ? "selected" : ""}>Đang chỉnh sửa</option>
+                        <option value="Đã bàn giao" ${item?.status === "Đã bàn giao" ? "selected" : ""}>Đã bàn giao</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        modal.classList.add("open");
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove("open");
+    }
+
+    function handleBackdropClick(event, modalId) {
+        if (event.target.id === modalId) {
+            closeModal(modalId);
+        }
+    }
+
+    function saveFormData(event) {
+        event.preventDefault();
+        const editId = document.getElementById("editId").value;
+        const newId = editId || "id_" + Date.now();
+        let record = { id: newId };
+
+        if (currentTab === "tasks") {
+            const checkedBoxes = document.querySelectorAll('input[name="f_assignees"]:checked');
+            const selectedStaff = Array.from(checkedBoxes).map(cb => cb.value);
+
+            record.title = document.getElementById("f_title").value.trim();
+            record.date = document.getElementById("f_date").value;
+            record.time = document.getElementById("f_time").value;
+            record.address = document.getElementById("f_address").value.trim();
+            record.assignees = selectedStaff;
+            record.status = document.getElementById("f_status").value;
+            record.note = document.getElementById("f_note").value.trim();
+        } else if (currentTab === "staff") {
+            record.name = document.getElementById("f_name").value.trim();
+            record.role = document.getElementById("f_role").value.trim();
+            record.phone = document.getElementById("f_phone").value.trim();
+            record.status = document.getElementById("f_status").value;
+            record.avatar = tempAvatarBase64;
+        } else if (currentTab === "docs") {
+            record.title = document.getElementById("f_title").value.trim();
+            record.category = document.getElementById("f_category").value;
+            record.locationGuide = document.getElementById("f_locationGuide").value.trim();
+            record.link = document.getElementById("f_link").value.trim();
+            record.updatedAt = document.getElementById("f_updatedAt").value;
+        } else if (currentTab === "prodFiles") {
+            record.project = document.getElementById("f_project").value.trim();
+            record.fileType = document.getElementById("f_fileType").value;
+            record.assignee = document.getElementById("f_assignee").value;
+            record.locationGuide = document.getElementById("f_locationGuide").value.trim();
+            record.link = document.getElementById("f_link").value.trim();
+            record.status = document.getElementById("f_status").value;
+        }
+
+        if (editId) {
+            const index = appData[currentTab].findIndex(x => x.id === editId);
+            if (index !== -1) appData[currentTab][index] = record;
+            showToast("Đã lưu thay đổi thành công!");
+        } else {
+            appData[currentTab].unshift(record);
+            showToast("Đã thêm mục mới vào danh sách!");
+        }
+
+        persistData();
+        closeModal("formModal");
+        renderCurrentView();
+    }
+
+    function requestDelete(id) {
+        pendingDeleteId = id;
+        document.getElementById("confirmModal").classList.add("open");
+    }
+
+    function confirmDelete() {
+        if (!pendingDeleteId) return;
+        appData[currentTab] = appData[currentTab].filter(x => x.id !== pendingDeleteId);
+        pendingDeleteId = null;
+        persistData();
+        closeModal("confirmModal");
+        renderCurrentView();
+        showToast("Đã xóa mục khỏi danh sách");
+    }
+
+    /* =================================================================
+       7. SAO LƯU & KHÔI PHỤC DỮ LIỆU
+       ================================================================= */
+    function exportData() {
+        const dataStr = JSON.stringify(appData, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sao-luu-${appData.profile.monogram.toLowerCase()}-${todayStr}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("Đã tải xuống file sao lưu dữ liệu!");
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (imported.staff && imported.tasks && imported.docs && imported.prodFiles) {
+                    appData = normalizeAppData(imported);
+                    persistData();
+                    applyPersonalization();
+                    renderCurrentView();
+                    showToast("Khôi phục dữ liệu thành công!");
+                } else {
+                    showToast("Lỗi: File không đúng định dạng ứng dụng.");
+                }
+            } catch (err) {
+                showToast("Lỗi: Không thể đọc file sao lưu.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+    }
+
+    // Khởi chạy ứng dụng
+    applyPersonalization();
+    updateFilterOptions();
+    updateStats();
+    renderCurrentView();
+    requestAnimationFrame(updateTabIndicator);
+</script>
+
+</body>
+</html>
